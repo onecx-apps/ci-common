@@ -1,0 +1,24 @@
+name: Create new build
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    name: create new build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.CI_PAT }}
+          ref: ${{ github.head_ref }}
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_user_name: tkit-dev
+          commit_user_email: tkit-dev@1000kit.org
+          commit_author: tkit-dev <tkit-dev@1000kit.org>
+          skip_dirty_check: true
+          commit_options: '--allow-empty'
+          commit_message: 'chore(ci): create new build'

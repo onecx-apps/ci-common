@@ -23,6 +23,16 @@ on:
         default: '{{ .Version }}'
         required: false
         type: string
+      platform:
+        description: 'Docker platforms'
+        default: ''
+        required: false
+        type: string
+      buildx:
+        description: 'Docker buildx'
+        default: false
+        required: false
+        type: boolean                      
 jobs:
   docker:
     name: docker build and push
@@ -39,27 +49,29 @@ jobs:
       SAMO_DOCKER_SKIP_OPENCONTAINERS_LABELS: 'false'
       SAMO_DOCKER_CONTEXT: '.'
       SAMO_DOCKER_SKIP_PULL: 'false'
-      SAMO_DOCKER_BUILD_PUSH: 'false'
-      SAMO_DOCKER_SKIP_DEV: 'false'
+      SAMO_DOCKER_BUILD_PUSH: ${{ inputs.push }}
+      SAMO_DOCKER_SKIP_DEV: 'true'
       SAMO_DOCKER_REMOVE_INTERMEDIATE_IMG_SKIP: 'false'
       SAMO_CONVENTIONAL_COMMITS: 'true'
+      SAMO_DOCKER_BUILDX: ${{ inputs.buildx }}
+      SAMO_DOCKER_PLATFORM: ${{ inputs.platform }}
+      SAMO_DOCKER_PROVENANCE: "false"
     steps:
     - uses: lorislab/install-samo-action@v2
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       if: ${{ inputs.artifact != '' }}
       with:
         name: ${{ inputs.artifact }}
         path: .
-    - uses: docker/login-action@v2
+    - uses: docker/setup-qemu-action@v3
+    - uses: docker/setup-buildx-action@v3
+    - uses: docker/login-action@v3
       with:
         registry: ${{ env.SAMO_DOCKER_REGISTRY }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}  
     - name: docker build
       run: samo project docker build -v debug
-    - name: docker push
-      if: ${{ inputs.push }}
-      run: samo project docker push -v debug 
