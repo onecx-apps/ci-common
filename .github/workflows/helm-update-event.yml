@@ -14,7 +14,7 @@ on:
         type: string
       helmRepository:
         description: 'Helm repository'
-        default: 'oci://ghcr.io/onecx/charts'
+        default: 'oci://ghcr.io/onecx-apps/charts'
         required: false
         type: string
       addRepoDeps:
